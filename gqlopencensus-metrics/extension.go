@@ -35,7 +35,7 @@ func New(opts ...Option) *Collector {
 
 	hostTag := make([]tag.Mutator, 0, 3)
 	if m.config.host != "" {
-		hostTag = []tag.Mutator{tag.Upsert(TagHost, m.config.host)}
+		hostTag = append(hostTag, tag.Upsert(TagHost, m.config.host))
 	}
 
 	m.opTagger = func(opName string) []tag.Mutator {
