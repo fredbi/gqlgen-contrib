@@ -33,17 +33,16 @@ func New(opts ...Option) *Collector {
 		apply(m.config)
 	}
 
-	hostTag := make([]tag.Mutator, 0, 3)
 	if m.config.host != "" {
-		hostTag = append(hostTag, tag.Upsert(TagHost, m.config.host))
+		m.config.host = "-"
 	}
 
 	m.opTagger = func(opName string) []tag.Mutator {
-		return append(hostTag, tag.Upsert(TagOperation, opName))
+		return []tag.Mutator{tag.Upsert(TagHost, m.config.host), tag.Upsert(TagOperation, opName)}
 	}
 	if m.config.fieldsEnabled {
 		m.fieldTagger = func(fieldName, pth string) []tag.Mutator {
-			return append(hostTag, tag.Upsert(TagField, fieldName), tag.Upsert(TagPath, pth))
+			return []tag.Mutator{tag.Upsert(TagHost, m.config.host), tag.Upsert(TagField, fieldName), tag.Upsert(TagPath, pth)}
 		}
 	}
 	return m
