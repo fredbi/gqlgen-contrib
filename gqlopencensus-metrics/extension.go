@@ -33,7 +33,7 @@ func New(opts ...Option) *Collector {
 		apply(m.config)
 	}
 
-	if m.config.host != "" {
+	if m.config.host == "" {
 		m.config.host = "-"
 	}
 
@@ -64,14 +64,18 @@ func (m Collector) InterceptField(ctx context.Context, next graphql.Resolver) (r
 		return next(ctx)
 	}
 
+	fc := graphql.GetFieldContext(ctx)
+	if !fc.IsMethod {
+		// only capture fields which correspond to a resolver method
+		return next(ctx)
+	}
+
 	start := graphql.Now()
 
 	defer func() {
-		fc := graphql.GetFieldContext(ctx)
 		end := graphql.Now()
-
 		_ = stats.RecordWithTags(ctx,
-			m.fieldTagger(fc.Field.Name, fc.Path().String()),
+			m.fieldTagger(fc.Field.Name, fieldPath(fc)),
 			ServerFieldCount.M(1),
 			ServerFieldLatency.M(float64(end.Sub(start))/float64(time.Millisecond)),
 		)
@@ -116,4 +120,8 @@ func operationName(ctx *graphql.OperationContext) (opName string) {
 		opName = ctx.OperationName
 	}
 	return
+}
+
+func fieldPath(ctx *graphql.FieldContext) string {
+	return ctx.Path().String()
 }
