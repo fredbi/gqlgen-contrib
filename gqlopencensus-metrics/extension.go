@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -123,5 +124,10 @@ func operationName(ctx *graphql.OperationContext) (opName string) {
 }
 
 func fieldPath(ctx *graphql.FieldContext) string {
-	return ctx.Path().String()
+	pth := ctx.Path().String()
+	if strings.HasPrefix(pth, "__schema") {
+		// collapse all introspection under one single tag
+		pth = "__schema"
+	}
+	return pth
 }
