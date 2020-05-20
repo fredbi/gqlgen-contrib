@@ -76,7 +76,7 @@ func (m Collector) InterceptField(ctx context.Context, next graphql.Resolver) (r
 	defer func() {
 		end := graphql.Now()
 		_ = stats.RecordWithTags(ctx,
-			m.fieldTagger(fc.Field.Name, fieldPath(fc)),
+			m.fieldTagger(fieldTags(fc)),
 			ServerFieldCount.M(1),
 			ServerFieldLatency.M(float64(end.Sub(start))/float64(time.Millisecond)),
 		)
@@ -123,11 +123,11 @@ func operationName(ctx *graphql.OperationContext) (opName string) {
 	return
 }
 
-func fieldPath(ctx *graphql.FieldContext) string {
+func fieldTags(ctx *graphql.FieldContext) (string, string) {
 	pth := ctx.Path().String()
 	if strings.HasPrefix(pth, "__schema") {
-		// collapse all introspection under one single tag
-		pth = "__schema"
+		// collapse all schema ntrospection under one single tag
+		return "[introspection]", "__schema"
 	}
-	return pth
+	return ctx.Field.Name, pth
 }
