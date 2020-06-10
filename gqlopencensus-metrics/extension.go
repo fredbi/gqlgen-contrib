@@ -126,7 +126,7 @@ func operationName(ctx *graphql.OperationContext) (opName string) {
 func fieldTags(ctx *graphql.FieldContext) (string, string) {
 	pth := ctx.Path().String()
 	if strings.HasPrefix(pth, "__schema") {
-		// collapse all schema ntrospection under one single tag
+		// collapse all schema introspection under one single tag
 		return "[introspection]", "__schema"
 	}
 	return ctx.Field.Name, pth
